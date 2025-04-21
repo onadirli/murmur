@@ -1,6 +1,9 @@
 # Usage
 
-- use `docker-compose` up to run the app
+- commands
+    - use `docker-compose` up to run the app
+    - `docker-compose build --no-cache && docker-compose up` to rebuild and restart
+    - `docker-compose down -v` to down and remove volumes
 - frontend is hosted at `localhost:5173`
 - backend is hosted at `localhost:8001`
 - to load data: 
@@ -33,6 +36,16 @@
 - Docker for containerazing everything
 
 
+# Design decisions
+- The database models are organized as such:
+    - Uploads and Surveys are one to one, this might have to be changed to be many to one, if one survey can be polled more than once, in which case you'd need to upload multiple files for a single Survey.
+    - Each Survey points to the Questions it has, which can be reused between different surveys. In this case we should have 5 Questions pointing to a single Survey, but the relationship is set up as many to many already to support multiple surveys which may feature the same question.
+    - Each Survey has a list of SurveyResponses, which are effectively a row in the input csv. They point to a Respondent, and 5 QuestionResponses, which make it easier to query specific questions later on.
+- Upload process is done as a POC and would not do well under load; the file upload is not optimized, ideally it would support chunks for bigger files, happen asynchronously, store the file in some kind of blob store and process it asynchronously again, from a different service. 
+- API schemas were created to satisfy the absolute bear minimums, for the frontend and for what the question asked for. Ideally they'd be much better organized, allow options for fetching nested data, and so on.
+- Database would be okay for a while, but would likely need read replicas, better indexing, or pre-analyzed data tables if the reads begin to become a bottleneck.
+- I used Svelte for frontend as I've been using it for redoing my personal website and it was fresh on my mind; it's also fast to dev while still being reactive, as the project asked for.
+- There's no logging, and the error handling is sparse. This was done to save time.
 
 # Responses to bonus questions
 ## Part 1
